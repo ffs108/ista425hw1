@@ -32,6 +32,15 @@ public class Engines : MonoBehaviour
     [Tooltip("Time to fade engine sound after shutoff, in seconds")]
     public float fadeTime = 0.5f;
 
+    public float VelocityDamper = 0.5f;
+    public float RotationDamper = 1.0f;
+
+    private float currentMovement;
+    private float currentRotation;
+
+    private bool isRotating = false;
+    private bool isMoving = false;
+
     float startVolume;
 
     // Start is called before the first frame update
@@ -39,6 +48,55 @@ public class Engines : MonoBehaviour
     {
         // the engine's user-specified sound preset
         startVolume = GetComponents<AudioSource>()[0].volume;
+    }
+
+    float determineMovement(float i, float movement, bool forRotation)
+    {
+        bool enginesOn = isMoving;
+        if (forRotation)
+        {
+            enginesOn = isRotating;
+        }
+        if (!enginesOn)
+        {
+            return 0f;
+        }
+        else if(i == 1.0f)
+        {
+            return movement;
+        }
+        else
+        {
+            return -movement;
+        }
+    }
+
+    float modifyMovement(float curMove, float damper, bool isRotating)
+    {
+        bool isNeg = false;
+        if(curMove < 0)
+        {
+            isNeg = true;
+            curMove = Mathf.Abs(curMove);
+        }
+        curMove -= damper / 10;
+        if(curMove < 0)
+        {
+            if (isRotating)
+            {
+                isRotating = false;
+            }
+            else
+            {
+                isMoving = false;
+            }
+            return 0;
+        }
+        if (isNeg)
+        {
+            curMove = -curMove;
+        }
+        return curMove;
     }
 
     // Update is called once per frame
@@ -57,6 +115,17 @@ public class Engines : MonoBehaviour
             {
                 impulse.Play();
             }
+            
+            if(y != 0.0f)
+            {
+                isMoving = true;
+                currentMovement = determineMovement(y, MovementRate, false);
+            }
+            if(x != 0.0f)
+            {
+                isRotating = true;
+                currentRotation = determineMovement(-x, RotationRate, true);
+            }
         }
         else
         {
@@ -69,11 +138,21 @@ public class Engines : MonoBehaviour
                 else
                     impulse.Stop();
             }
+            
+        }
+        if (y == 0.0f && isMoving)
+        {
+            currentMovement = modifyMovement(currentMovement, VelocityDamper, false);
+        }
+        else if(x == 0.0f && isRotating)
+        {
+            currentRotation = modifyMovement(currentRotation, RotationDamper, true);
         }
 
-        transform.Rotate(0.0f, 0.0f, -x * RotationRate * Time.deltaTime);
+        transform.Rotate(0.0f, 0.0f, 1 * currentRotation * Time.deltaTime);
+
 
         // a framerate independent translation along the vector defined by user directional inputs
-        transform.Translate((new Vector3 (0,y,0)).normalized * MovementRate * Time.deltaTime);
+        transform.Translate((new Vector3 (0,1,0)).normalized * currentMovement * Time.deltaTime);
     }
 }

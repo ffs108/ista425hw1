@@ -26,6 +26,8 @@ public class Launcher : MonoBehaviour
 {
     // maximum torpedos that may be in play at a time
     private GameObject[] TorpedoArray;
+    private float lastShot;
+    private float timer = 0;
     int index = 0;
 
     [Tooltip("Type of torpedo prefab fired by launcher")]
@@ -45,14 +47,18 @@ public class Launcher : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        lastShot = 1 / RateOfFire;
         TorpedoArray = new GameObject[MaxTorpedoes];
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
+        timer += Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.Return) && timer >= lastShot)
         {
+            timer = 0f;
             Guidance guidance;
 
             index++;
