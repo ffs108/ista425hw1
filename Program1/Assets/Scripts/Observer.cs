@@ -9,7 +9,8 @@ public class Observer : MonoBehaviour
 
     private float time2 = 0f;
     public float displayMessage = 5.0f;
-    public float rotationSpeed = 0.1f;
+    public float rotationSpeed = 0.75f;
+    public float velocityModifier = 1f;
     
     GameObject gc;
     GameObject hero;
@@ -81,6 +82,6 @@ public class Observer : MonoBehaviour
             currentOrientation = newVectorCoord;
         }
         gameObject.transform.Rotate(0, 0, splicedAngle * Mathf.Rad2Deg);
-        transform.position += currentOrientation * Time.deltaTime;
+        transform.position += currentOrientation * velocityModifier * Time.deltaTime;
     }	
 }

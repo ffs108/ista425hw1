@@ -79,6 +79,10 @@ public class Engines : MonoBehaviour
             isNeg = true;
             curMove = Mathf.Abs(curMove);
         }
+        if (isRotating)
+        {
+            damper = damper * 5;
+        }
         curMove -= damper / 10;
         if(curMove < 0)
         {
