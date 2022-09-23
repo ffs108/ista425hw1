@@ -43,8 +43,10 @@ public class Targetable : MonoBehaviour {
 	// Hint: The intersection logic may be overloaded to accommodate other types of inter-
 	// section tests beyond line-line intersections.
 	public bool Intersect(out Vector3 intersection, Vector3 initial, Vector3 direction) {
+
 		bool found = false;
-		intersection = Vector3.zero;
+		intersection = Vector3.zero; 
+		//Debug.DrawRay(initial, direction, Color.red, 10f);
 
 		// These variables characterize our targetable. The variable center gives 
 		// the midpoint of the targetable GameObject. Variable surface is a 2D line
@@ -74,8 +76,10 @@ public class Targetable : MonoBehaviour {
 
 			// check against the length of the line segment
 			if ((candPoint - center).sqrMagnitude <= (extent / 2.0f) * (extent / 2.0f)) {
+				
 				// make sure the target is in front of us, not behind
 				if (Vector3.Dot((candPoint - initial).normalized, direction) > 0.0f) {
+
 					found = true;
 					intersection = candPoint;
 				}

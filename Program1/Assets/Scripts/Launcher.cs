@@ -41,7 +41,7 @@ public class Launcher : MonoBehaviour
 
     public GameObject GetLastTorpedo()
     {
-        return TorpedoArray[index]; 
+        return TorpedoArray[index];
     }
 
     // Start is called before the first frame update
@@ -68,14 +68,14 @@ public class Launcher : MonoBehaviour
             if (TorpedoArray[index] != null)
                 GameObject.Destroy(TorpedoArray[index]);
 
-            Vector4 position = transform.localToWorldMatrix * new Vector4 (0.0f, 1.0f, 0.0f, 1.0f);
+            Vector4 position = transform.localToWorldMatrix * new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
             Quaternion rotation = Quaternion.identity;
 
             TorpedoArray[index] = Instantiate(TorpedoType, position, rotation) as GameObject;
-            
+
             // init guidance system to direction ship is facing
             guidance = TorpedoArray[index].GetComponent<Guidance>();
-            guidance.direction = (new Vector3 (position.x, position.y, position.z) - transform.position).normalized;
+            guidance.direction = (new Vector3(position.x, position.y, position.z) - transform.position).normalized;
 
             //Debug.Log("Torpedo direction is " + guidance.direction);
         }

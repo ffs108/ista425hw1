@@ -32,7 +32,7 @@ public class Engines : MonoBehaviour
     [Tooltip("Time to fade engine sound after shutoff, in seconds")]
     public float fadeTime = 0.5f;
 
-    public float VelocityDamper = 0.5f;
+    public float VelocityDamper = 0.25f;
     public float RotationDamper = 1.0f;
 
     private float currentMovement;
@@ -61,7 +61,7 @@ public class Engines : MonoBehaviour
         {
             return 0f;
         }
-        else if(i == 1.0f)
+        else if (i == 1.0f)
         {
             return movement;
         }
@@ -74,7 +74,7 @@ public class Engines : MonoBehaviour
     float modifyMovement(float curMove, float damper, bool isRotating)
     {
         bool isNeg = false;
-        if(curMove < 0)
+        if (curMove < 0)
         {
             isNeg = true;
             curMove = Mathf.Abs(curMove);
@@ -84,7 +84,7 @@ public class Engines : MonoBehaviour
             damper = damper * 5;
         }
         curMove -= damper / 10;
-        if(curMove < 0)
+        if (curMove < 0)
         {
             if (isRotating)
             {
@@ -111,7 +111,7 @@ public class Engines : MonoBehaviour
         float y = Input.GetAxisRaw("Vertical");
 
         AudioSource impulse = GetComponents<AudioSource>()[0];
-        if ((Mathf.Abs (x) > 0.0f || Mathf.Abs (y) > 0.0f))
+        if ((Mathf.Abs(x) > 0.0f || Mathf.Abs(y) > 0.0f))
         {
             // ship is moving; engage the engine (sounds)
             impulse.volume = startVolume;
@@ -119,13 +119,13 @@ public class Engines : MonoBehaviour
             {
                 impulse.Play();
             }
-            
-            if(y != 0.0f)
+
+            if (y != 0.0f)
             {
                 isMoving = true;
                 currentMovement = determineMovement(y, MovementRate, false);
             }
-            if(x != 0.0f)
+            if (x != 0.0f)
             {
                 isRotating = true;
                 currentRotation = determineMovement(-x, RotationRate, true);
@@ -142,13 +142,13 @@ public class Engines : MonoBehaviour
                 else
                     impulse.Stop();
             }
-            
+
         }
         if (y == 0.0f && isMoving)
         {
             currentMovement = modifyMovement(currentMovement, VelocityDamper, false);
         }
-        else if(x == 0.0f && isRotating)
+        else if (x == 0.0f && isRotating)
         {
             currentRotation = modifyMovement(currentRotation, RotationDamper, true);
         }
@@ -157,6 +157,6 @@ public class Engines : MonoBehaviour
 
 
         // a framerate independent translation along the vector defined by user directional inputs
-        transform.Translate((new Vector3 (0,1,0)).normalized * currentMovement * Time.deltaTime);
+        transform.Translate((new Vector3(0, 1, 0)).normalized * currentMovement * Time.deltaTime);
     }
 }

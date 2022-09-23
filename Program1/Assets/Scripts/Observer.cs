@@ -11,13 +11,15 @@ public class Observer : MonoBehaviour
     public float displayMessage = 5.0f;
     public float rotationSpeed = 0.75f;
     public float velocityModifier = 1f;
-    
+    public float fadeTime = 1f;
+
     GameObject gc;
     GameObject hero;
     Vector3 currentOrientation;
+    bool isHit;
 
     // direction to active target (in world space)
-    Vector3 targetDir  = Vector3.zero;
+    Vector3 targetDir = Vector3.zero;
 
     // A vector defining the surface normal in world space.
     public Vector3 getLineOfSight()
@@ -28,8 +30,9 @@ public class Observer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gc   = GameObject.FindGameObjectWithTag("GameController");
-        hero = gc.GetComponent<GameManager> ().playerShip;
+        isHit = false;
+        gc = GameObject.FindGameObjectWithTag("GameController");
+        hero = gc.GetComponent<GameManager>().playerShip;
         Vector3 currentRotation = gameObject.transform.localEulerAngles;
         currentOrientation = Vector3.Normalize(Vector3.Cross(currentRotation, Vector3.left));
         rotationSpeed = rotationSpeed * Mathf.Deg2Rad;
@@ -45,17 +48,17 @@ public class Observer : MonoBehaviour
 
         GameObject[] torpedos = GameObject.FindGameObjectsWithTag("Torpedo");
         GameObject currentFocus = hero;
-        if(torpedos.Length > 0)
+        if (torpedos.Length > 0)
         {
             currentFocus = torpedos[0];
         }
         Vector3 currentFocusVector = Vector3.Normalize(currentFocus.transform.position - transform.position);
         float dotProduct = currentFocusVector.x * currentOrientation.x + currentFocusVector.y * currentOrientation.y + currentFocusVector.z * currentOrientation.z;
-        if(dotProduct >= 1)
+        if (dotProduct >= 1)
         {
             dotProduct = 1;
         }
-        else if(dotProduct <= -1)
+        else if (dotProduct <= -1)
         {
             dotProduct = -1;
         }
@@ -69,7 +72,7 @@ public class Observer : MonoBehaviour
             angle = -angle;
             splicedAngle = -splicedAngle;
         }
-        
+
         if (Mathf.Abs(splicedAngle) >= Mathf.Abs(angle))
         {
             //Debug.Log("Switched by rotationspeed >= angle if statement: " + currentOrientation + " Current Focus Vector: " + currentFocusVector + " Angle: " + angle * Mathf.Rad2Deg);
@@ -86,5 +89,20 @@ public class Observer : MonoBehaviour
 
         // would make it move
         //transform.position += currentOrientation * velocityModifier * Time.deltaTime;
-    }	
+
+        // bug death
+        if(isHit)
+        {
+            Destroy(gameObject, fadeTime);
+            SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+
+            // fade the bug out of existence
+            renderer.color = new Color(1.0f, 1.0f, 1.0f, (renderer.color.a - (Time.deltaTime / fadeTime)));
+        }
+    }
+
+    public void SetIsHit(bool b)
+    {
+        isHit = b;
+    }
 }
