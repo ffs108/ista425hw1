@@ -50,7 +50,7 @@ public class Observer : MonoBehaviour
             currentFocus = torpedos[0];
         }
         Vector3 currentFocusVector = Vector3.Normalize(currentFocus.transform.position - transform.position);
-        float dotProduct = Vector3.Dot(currentFocusVector, currentOrientation);
+        float dotProduct = currentFocusVector.x * currentOrientation.x + currentFocusVector.y * currentOrientation.y + currentFocusVector.z * currentOrientation.z;
         if(dotProduct >= 1)
         {
             dotProduct = 1;
@@ -62,8 +62,9 @@ public class Observer : MonoBehaviour
         float angle = Mathf.Acos(dotProduct);
 
         float splicedAngle = rotationSpeed;
-        
-        if (Vector3.Cross(currentOrientation, currentFocusVector).z < 0)
+
+        float zCross = currentOrientation.x * currentFocusVector.y - currentOrientation.y * currentFocusVector.x;
+        if (zCross < 0)
         {
             angle = -angle;
             splicedAngle = -splicedAngle;
@@ -82,6 +83,8 @@ public class Observer : MonoBehaviour
             currentOrientation = newVectorCoord;
         }
         gameObject.transform.Rotate(0, 0, splicedAngle * Mathf.Rad2Deg);
-        transform.position += currentOrientation * velocityModifier * Time.deltaTime;
+
+        // would make it move
+        //transform.position += currentOrientation * velocityModifier * Time.deltaTime;
     }	
 }

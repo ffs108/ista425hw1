@@ -26,8 +26,7 @@ using UnityEngine;
 /// 
 /// </summary>
 
-public class Guidance : MonoBehaviour
-{
+public class Guidance : MonoBehaviour {
     [Tooltip("Speed of the torpedo")]
     public float velocity = 10.0f;
 
@@ -52,9 +51,11 @@ public class Guidance : MonoBehaviour
 
     float tMax = 0.0f;
 
+    //reflection var
+    public float NumberReflections = 0.0f;
+
     // Acquire a new target point
-    bool Acquire(out Vector3 target, ref GameObject targObj)
-    {
+    bool Acquire(out Vector3 target, ref GameObject targObj) {
         bool found = false;
         target = Vector3.zero;
 
@@ -62,13 +63,11 @@ public class Guidance : MonoBehaviour
         Vector3 candTarget = Vector3.zero;
 
         // finds the first applicable target in the list.
-        for (int i = 0; i < potentialTargets.Length && !found; i++)
-        {
+        for (int i = 0; i < potentialTargets.Length && !found; i++) {
             //Debug.Log("Checking target " + potentialTargets[i].name);
             candFound = potentialTargets[i].GetComponent<Targetable>().Intersect(out candTarget, transform.position, direction);
 
-            if (candFound)
-            {
+            if (candFound) {
                 found = candFound;
                 target = candTarget;
                 targObj = potentialTargets[i];
@@ -78,8 +77,7 @@ public class Guidance : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         // assemble a list of all targets this torpedo may acquire
         potentialTargets = GameObject.FindGameObjectsWithTag("Targetable");
 
@@ -87,19 +85,17 @@ public class Guidance : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update() {
         // decrement the lifetime counter for this tick
         timeToLive -= Time.deltaTime;
         //Debug.Log("Time to live: " + timeToLive);
 
         // move until contact with target or out of gas
-        if (!targetImpacted && timeToLive > 0.001f)
-        {
-            if (!targetAcquired)
-            {
+        if (!targetImpacted && timeToLive > 0.001f) {
+            if (!targetAcquired) {
                 targetAcquired = Acquire(out targetPoint, ref targetObject);
-                startPos = transform.position;
+                print(targetObject.name + " at postion " + targetPoint);
+                //startPos = transform.position;
                 t = 0.0f;//reset
                 //Debug.Log("Target acquired: " + targetAcquired + " at position " + targetPoint);
             }
@@ -115,34 +111,49 @@ public class Guidance : MonoBehaviour
             //float currentDist = (myLerp(startPos, targetPoint, (t+Time.deltaTime)/timeToLive)).sqrMagnitude;
             //transform.position = myLerp(startPos, targetPoint, velocity*Time.deltaTime);
 
-            if (targetAcquired)
-            {
-                Vector3 distVec = targetPoint - startPos;
-                float length = Mathf.Sqrt(Mathf.Pow(distVec.x, 2) + Mathf.Pow(distVec.y, 2));
-                t += (velocity * Time.deltaTime) * 1f / length; //not timeToLive??
-                transform.position = startPos + t * distVec;
-                //transform.position = myLerp(startPos, targetPoint, t);
-            }
+
+            /* LERPing done when target acq'd */
+            Vector3 distVec = targetPoint - startPos;
+            float length = Mathf.Sqrt(Mathf.Pow(distVec.x, 2) + Mathf.Pow(distVec.y, 2));
+            t += (velocity * Time.deltaTime) * 1f / length; //not timeToLive??
+                                                            // (1 - t) * v0 + t * v1
+            Vector3 lerped = (1 - t) * startPos + t * distVec;
+            //print(t);
+
             // Either there's no target, or we haven't yet impacted target.
-            if (!targetAcquired || currentDist > 0.002f)
-            {
+            if (!targetAcquired || t <= 1f || targetImpacted == true) {
                 // just move along direction of travel indefinitely
                 transform.Translate(direction * velocity * Time.deltaTime);
-            }
-            else if(t > 1) // we've hit an acquired target: reflect
-            {
+                //transform.position = (direction * velocity * Time.deltaTime);
+            } else  // we've hit an acquired target: reflect
+              {
+                /* Reflection when torpedo hits wall */
                 targetImpacted = true;
+                if (NumberReflections != 0) {
+                    Vector3 norm = targetObject.GetComponent<Targetable>().getNormal(); //station wall norm
+                    direction = reflection(direction, norm);
+                    targetAcquired = false;
+                    startPos = transform.position;
+                    //print("any");
+                    //this ^ is v' 
+                    //transform.position = direction * velocity * Time.deltaTime; //not t.pos ig
+                    transform.Translate(direction * velocity * Time.deltaTime);
+                    NumberReflections -= 1;
+
+                } else {
+                    timeToLive = 0.5f;
+                }
 
                 // contacted with targetable object; play ricochset sound
                 AudioSource ricochet = GetComponents<AudioSource>()[1];
                 ricochet.Play();
-
-                timeToLive = 0.5f;
+                t = 0.0f;
             }
-        }
+            targetImpacted = false;
 
-        if (timeToLive <= fadeTime)
-        {
+        }
+        
+        if (timeToLive <= fadeTime) {
             SpriteRenderer renderer = GetComponent<SpriteRenderer>();
 
             // fade the torpedo out of existence
@@ -161,18 +172,28 @@ public class Guidance : MonoBehaviour
 	 */
 
     //helper function --unneccesary
-    float lowerOrderLerp(float firstVal, float secondVal, float t)
-    {
+    static float lowerOrderLerp(float firstVal, float secondVal, float t) {
         return (1 - t) * firstVal + t * secondVal; // (1 - t) * v0 + t * v1
-    }
+    }   
 
     //hates my func but is ok when in the if statement?????
-    Vector3 myLerp(Vector3 start, Vector3 end, float t)
-    {
-        Vector3 retVal = end - start;
-        float length = Mathf.Sqrt(Mathf.Pow(retVal.x, 2) + Mathf.Pow(retVal.y, 2));
-        t += (velocity * Time.deltaTime) * 1f / length;
+    static Vector3 myLerp(Vector3 start, Vector3 end, float t) {
+        Vector3 retval = end - start;
+        float length = Mathf.Sqrt(Mathf.Pow(retval.x, 2) + Mathf.Pow(retval.y, 2));
+        //t += (Guidance.velocity * Time.deltaTime) * 1f / length; -- all of a sudden velocity could not be called on?
         //retVal =* t + start;
-        return retVal;
+        return retval;
+    }
+
+    /*
+     * 
+     * Added reflection function here -- ff
+     * 
+     */
+    static Vector3 reflection(Vector3 start, Vector3 norm) {
+        float dot = (start.x * norm.x) + (start.y * norm.y) + (start.z * norm.z);
+        // v'= v - 2n(v*n)
+        Vector3 vecPrime = start - (2.0f * dot * norm);
+        return vecPrime;
     }
 }
