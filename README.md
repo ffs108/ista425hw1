@@ -1,9 +1,9 @@
 
 Assignment 1 -- ISTA 425                                            
 ________________________________________________________________________
-+	Daniel Shevelev						       +
-+	Koan Zhang						       +
-+	Francisco Figueroa					       +
++	Daniel Shevelev						       
++	Koan Zhang						       
++	Francisco Figueroa					       
 ________________________________________________________________________
 
 In this homework 1 assignment we have implemented the following upgrades to the base code:
